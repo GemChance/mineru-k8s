@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mineru-data-pvc  # 这是PVC的名字，我们稍后会在Pod中引用它
+spec:
+  accessModes:
+    - ReadWriteOnce
+  
+  # *** 关键改动在这里 ***
+  # 明确指定使用名为 csi-s3 的 StorageClass
+  # 这会告诉Kubernetes使用Yandex S3来创建你的存储卷
+  storageClassName: "csi-s3"
+  
+  resources:
+    requests:
+      storage: 200Gi  # 明确申请 200 GiB 的存储空间

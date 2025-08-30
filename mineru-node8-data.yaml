@@ -1,0 +1,31 @@
+# 这是修改后的 mineru.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mineru-pod
+spec:
+  nodeName: node8         # 明确指定调度到 node8
+  containers:
+    - name: mineru
+      image: crpi-v8mo8czr2cxuc162.cn-beijing.personal.cr.aliyuncs.com/test_k8s_kubectl/mineru:v1
+      command: ["sleep", "infinity"]
+      resources:
+        limits:
+          nvidia.com/gpu: "1" # 申请1个GPU资源 (我将这个从4改为了1，与注释保持一致，请按需修改)
+      
+      # *** 关键改动在这里 ***
+      # 将持久卷挂载到容器的 /data 目录
+      volumeMounts:
+        - name: data-storage      # 引用下面 volumes 定义的卷
+          mountPath: /data        # 挂载到容器内的 /data 路径
+  
+  # *** 关键改动在这里 ***
+  # 定义Pod要使用的卷
+  volumes:
+    - name: data-storage      # 定义一个卷，名字叫 data-storage
+      persistentVolumeClaim:
+        claimName: mineru-data-pvc # 引用我们第一步中创建的PVC的名字
+
+  restartPolicy: Never
+  imagePullSecrets:
+    - name: docker-reg-secret-fjc
