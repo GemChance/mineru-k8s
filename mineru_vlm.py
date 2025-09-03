@@ -17,12 +17,11 @@ from mineru.backend.vlm.vlm_middle_json_mkcontent import union_make as vlm_union
 from mineru.utils.models_download_utils import auto_download_and_get_model_root_path
 
 
-def setup_logging():
+def setup_logging(log_dir="logs"):
     """
     设置日志配置，将mineru的日志输出到文件
     """
     # 创建logs目录
-    log_dir = "testoutput/logs"
     os.makedirs(log_dir, exist_ok=True)
     
     # 生成带时间戳的日志文件名
@@ -294,65 +293,3 @@ def parse_doc(
         
     except Exception as e:
         logger.exception(f"解析过程中发生错误: {str(e)}")
-
-
-if __name__ == '__main__':
-    # 设置日志
-    log_file = setup_logging()
-    logger.info("=== Mineru PDF解析工具启动 ===")
-    
-    # 配置路径
-    pdf_files_dir = "testoutput"  # 输入PDF文件目录
-    output_dir = "testoutput"     # 输出目录（与输入目录相同）
-    
-    # 支持的文档格式
-    pdf_suffixes = [".pdf"]
-    image_suffixes = [".png", ".jpeg", ".jpg"]
-    
-    logger.info(f"输入目录: {pdf_files_dir}")
-    logger.info(f"输出目录: {output_dir}")
-    
-    # 查找所有PDF文件
-    doc_path_list = []
-    for doc_path in Path(pdf_files_dir).glob('*.pdf'):  # 只查找.pdf文件
-        if doc_path.suffix in pdf_suffixes:
-            doc_path_list.append(doc_path)
-    
-    logger.info(f"找到 {len(doc_path_list)} 个PDF文件")
-    
-    # 设置环境变量（如果需要使用modelscope下载模型）
-    # os.environ['MINERU_MODEL_SOURCE'] = "modelscope"
-    
-    # 配置批处理参数
-    BATCH_SIZE = 5  # 每批处理5个文件
-    
-    # 配置解析参数 - 你可以在这里自由修改这些参数
-    PARSING_CONFIG = {
-        'formula_enable': True,        # 是否启用公式解析
-        'table_enable': True,          # 是否启用表格解析
-        'f_draw_layout_bbox': True,   # 是否绘制布局边界框
-        'f_dump_md': True,            # 是否输出markdown文件
-        'f_dump_middle_json': True,   # 是否输出中间JSON文件
-        'f_dump_model_output': True,  # 是否输出模型输出文件
-        'f_dump_orig_pdf': False,      # 是否输出原始PDF文件
-        'f_dump_content_list': True,  # 是否输出内容列表文件
-        'f_make_md_mode': MakeMode.MM_MD,  # markdown模式
-    }
-    
-    logger.info(f"批处理大小: {BATCH_SIZE}")
-    logger.info("解析参数配置:")
-    for key, value in PARSING_CONFIG.items():
-        logger.info(f"  {key}: {value}")
-    
-    # 使用vlm-transformers后端进行解析
-    logger.info("开始使用vlm-transformers后端解析PDF文件...")
-    parse_doc(
-        doc_path_list, 
-        output_dir, 
-        backend="vlm-transformers",
-        batch_size=BATCH_SIZE,
-        **PARSING_CONFIG  # 展开所有解析参数
-    )
-    
-    logger.info("=== 解析完成 ===")
-    logger.info(f"详细日志请查看: {log_file}")
